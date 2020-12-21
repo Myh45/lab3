@@ -17,6 +17,7 @@
                 "root",
                 "",
                 "firm");
+            // перевірка з'єднання
             if (mysqli_connect_errno()) {
                 echo "Failed to connect to MySQL: " . mysqli_connect_error();
                 exit;
@@ -24,7 +25,6 @@
             if (!$connection->set_charset("utf8")) {
                 printf("Error loading character set utf8: %s\n", $connection->error);
             }
-
             $sql = "SELECT DISTINCT `reports`.`date` AS Date_u,
 (SELECT SUM(`reports`.`external_project`*`cost_of_work`.`salary`)-SUM(`reports`.`internal_project`*`cost_of_work`.`salary`)
  FROM `reports`
@@ -50,17 +50,35 @@ FROM `reports`";
             };
             chart.draw(dataTable, options);
             google.visualization.events.addListener(chart, 'select', function () {
+
                 var row = chart.getSelection()[0].row;
+
                 if (row != undefined) {
                     var id_date = dataTable.getValue(row, 0);
+                    //var id_date1 = parseInt(id_date, 10);
                     showHint(id_date);
                 }
             });
+            function showHint(id) {
+                if (id < 0) {
+                    document.getElementById("txtHint").innerHTML = "";
+                    alert('Помилка дати.');
+                    return;
+                } else {
+                    var xmlhttp = new XMLHttpRequest();
+                    xmlhttp.onreadystatechange = function () {
+                        if (this.readyState == 4 && this.status == 200) {
+                            document.getElementById("information_about_day").innerHTML = this.responseText;
+                        }
+                    }
+                    xmlhttp.open("GET", "get_information.php?date=" + id, true);
+                    xmlhttp.send();
+                }
+            }
         }
     </script>
 </head>
 <body>
-
 <div id="calendar_basic" style="width: 1000px; height: 350px;"></div>
 <div id="information_about_day"></div>
 </body>
